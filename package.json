@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/clorislee1222/tinyapp/issues"
   },
-  "homepage": "https://github.com/clorislee1222/tinyapp#readme"
+  "homepage": "https://github.com/clorislee1222/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }
