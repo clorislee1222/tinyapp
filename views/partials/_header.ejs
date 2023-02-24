@@ -9,15 +9,22 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-        <form class="form-inline" action="/login" method="POST">
-          <input
-            class="form-control"
-            type="text"
-            name="username"
-            placeholder="username"
-          />
-          <button type="submit" class="btn btn-primary">Sign In</button>
-        </form>
+        <% if (username) { %>
+          <span class="navbar-text font-weight-bold bg-dark">
+            Username: <%= username %>
+          </span>
+          <% } else { %>
+            <form class="form-inline" action="/login" method="POST">
+              <input
+                class="form-control"
+                type="text"
+                name="username"
+                placeholder="username"
+              />
+              <button type="submit" class="btn btn-primary">Sign In</button>
+            </form>
+          <% } %>
+
       </div>
     </div>
   </nav>
