@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
+const cookieParser = require('cookie-parser');
 
 app.set("view engine", "ejs");
 
@@ -9,7 +10,21 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -28,22 +43,30 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { 
+    user: users[req.cookies["user_id"]],
+    urls: urlDatabase 
+  };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { 
+    user: users[req.cookies["user_id"]],
+    id: req.params.id, 
+    longURL: urlDatabase[req.params.id]};
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id]};
+  const templateVars = { 
+    user: users[req.cookies["user_id"]],
+    id: req.params.id, 
+    longURL: urlDatabase[req.params.id]};
   res.render("urls_show", templateVars);
 });
 
 app.post("/urls", (req, res) => {
-  // console.log(req.body); // Log the POST request body to the console
-  // res.send("Ok"); // Respond with 'Ok' (we will replace this)
   const id = generateRandomString();
   urlDatabase[id] = req.body.longURL;
   res.redirect(`/urls/${id}`);
@@ -64,10 +87,56 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 });
 
-app.get("/register", (req, res) => {
-  res.render("user_registration");
+app.post("/login", (req, res) => {
+  const user = userLookup(req.body.email);
+  res.cookie("user_id", user.id);
+  res.redirect("/urls");
 });
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("user_id");
+  res.redirect("/urls");
+});
+
+app.get("/register", (req, res) => {
+  const templateVars = { 
+    user: null
+  };
+  res.render("user_registration", templateVars);
+});
+
+app.post("/register", (req, res) => {
+  const userRandomID = generateRandomString();
+  const user_id = userRandomID;
+  let email = req.body.email;
+  let password = req.body.password;
+
+  //If the e-mail or password are empty strings, send back a response with the 400 status code.
+   if (!email || !password) {
+     res.status(400).send("Please enter enmail and password!");
+     return;
+   }
+
+  //If someone tries to register with an email that is already in the users object, send back a response with the 400 status code.
+  if (userLookup(email)) {
+    res.status(400).send("This email is already in use.");
+    return;
+  }
+
+  users[user_id] = { id: user_id, email, password };
+  res.cookie("user_id", user_id);
+  res.redirect("/urls");
+})
 
 function generateRandomString() {
   return Math.random().toString(36).slice(2, 8);
 };
+
+function userLookup(email) {
+  for (const user in users) {
+    if (users[user].email === email) {
+      return users(user);
+    }
+  }
+  return null;
+}
