@@ -4,7 +4,7 @@ function generateRandomString() {
   return Math.random().toString(36).slice(2, 8);
 };
 
-function userLookup(email, users) {
+function getUserByEmail(email, users) {
   for (const user in users) {
     if (users[user].email === email) {
       return users[user];
@@ -26,6 +26,6 @@ function urlsForUser(id, urlDatabase) {
 
 module.exports = {
   generateRandomString,
-  userLookup,
+  getUserByEmail,
   urlsForUser
 };

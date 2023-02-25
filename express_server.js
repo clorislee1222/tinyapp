@@ -5,10 +5,9 @@ const bcrypt = require("bcryptjs");
 const cookieSession = require("cookie-session");
 const {
   generateRandomString,
-  userLookup,
+  getUserByEmail,
   urlsForUser
 } = require("./helpers"); // helper functions
-
 
 app.set("view engine", "ejs");
 
@@ -203,7 +202,7 @@ app.post("/register", (req, res) => {
   }
 
   //If someone tries to register with an email that is already in the users object, send back a response with the 400 status code.
-  if (userLookup(email, users)) {
+  if (getUserByEmail(email, users)) {
     res.status(400).send("This email is already in use.");
     return;
   }
@@ -214,7 +213,7 @@ app.post("/register", (req, res) => {
 })
 
 app.post("/login", (req, res) => {
-  const user = userLookup(req.body.email, users);
+  const user = getUserByEmail(req.body.email, users);
 
   // If a user with that e-mail cannot be found, return a response with a 403 status code.
   if (!user) {
