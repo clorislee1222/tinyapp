@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require('cookie-parser');
+const bcrypt = require("bcryptjs");
 
 app.set("view engine", "ejs");
 
@@ -21,11 +22,13 @@ const users = {
     id: "userRandomID",
     email: "user@example.com",
     password: "purple-monkey-dinosaur",
+    hashedPassword: bcrypt.hashSync("purple-monkey-dinosaur", 10)
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk",
+    hashedPassword: bcrypt.hashSync("dishwasher-funk", 10)
   },
 };
 
@@ -181,11 +184,11 @@ app.post("/register", (req, res) => {
   const userRandomID = generateRandomString();
   const user_id = userRandomID;
   let email = req.body.email;
-  let password = req.body.password;
+  let hashedPassword = bcrypt.hashSync(req.body.password, 10);
 
   //If the e-mail or password are empty strings, send back a response with the 400 status code.
-  if (!email || !password) {
-    res.status(400).send("Please enter email and password.");
+  if (!email || !(req.body.password)) {
+    res.status(400).send("Please enter both email and password.");
     return;
   }
 
@@ -195,7 +198,7 @@ app.post("/register", (req, res) => {
     return;
   }
 
-  users[user_id] = { id: user_id, email, password };
+  users[user_id] = { id: user_id, email, hashedPassword };
   res.cookie("user_id", user_id);
   res.redirect("/urls");
 })
@@ -210,11 +213,11 @@ app.post("/login", (req, res) => {
   }
 
   // If a user with that e-mail address is located, compare the password given in the form with the existing user's password. If it does not match, return a response with a 403 status code.
-  if (user.password !== req.body.password) {
+  if (!bcrypt.compareSync(req.body.password, user.hashedPassword)) {
     res.status(403).send("Password incorrect.");
     return;
   }
-
+  console.log(user.hashedPassword);
   // If both checks pass, set the user_id cookie with the matching user's random ID, then redirect to /urls.
   res.cookie("user_id", user.id);
   res.redirect("/urls");
