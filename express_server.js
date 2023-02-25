@@ -87,15 +87,38 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 });
 
+app.get("/login", (req, res) => {
+  const templateVars = { 
+    email: req.body.email,
+    password: req.body.password,
+    user: users[req.cookies["user_id"]]
+  };
+  res.render("login", templateVars);
+});
+
 app.post("/login", (req, res) => {
   const user = userLookup(req.body.email);
+
+// If a user with that e-mail cannot be found, return a response with a 403 status code.
+  if (!user) {
+    res.status(403).send("A user with the given email cannot be found.");
+    return;
+  } 
+
+// If a user with that e-mail address is located, compare the password given in the form with the existing user's password. If it does not match, return a response with a 403 status code.
+  if (user.password !== req.body.password) {
+    res.status(403).send("Password incorrect.");
+    return;
+  }
+
+// If both checks pass, set the user_id cookie with the matching user's random ID, then redirect to /urls.
   res.cookie("user_id", user.id);
   res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 app.get("/register", (req, res) => {
@@ -113,7 +136,7 @@ app.post("/register", (req, res) => {
 
   //If the e-mail or password are empty strings, send back a response with the 400 status code.
    if (!email || !password) {
-     res.status(400).send("Please enter enmail and password!");
+     res.status(400).send("Please enter email and password.");
      return;
    }
 
@@ -128,6 +151,7 @@ app.post("/register", (req, res) => {
   res.redirect("/urls");
 })
 
+
 function generateRandomString() {
   return Math.random().toString(36).slice(2, 8);
 };
@@ -135,7 +159,7 @@ function generateRandomString() {
 function userLookup(email) {
   for (const user in users) {
     if (users[user].email === email) {
-      return users(user);
+      return users[user];
     }
   }
   return null;
