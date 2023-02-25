@@ -21,13 +21,11 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur",
     hashedPassword: bcrypt.hashSync("purple-monkey-dinosaur", 10)
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk",
     hashedPassword: bcrypt.hashSync("dishwasher-funk", 10)
   },
 };
@@ -217,7 +215,7 @@ app.post("/login", (req, res) => {
     res.status(403).send("Password incorrect.");
     return;
   }
-  console.log(user.hashedPassword);
+
   // If both checks pass, set the user_id cookie with the matching user's random ID, then redirect to /urls.
   res.cookie("user_id", user.id);
   res.redirect("/urls");
