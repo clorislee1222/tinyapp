@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+    integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous" />
+  <title>URL - TinyApp Register</title>
+</head>
+
+<body>
+  <%- include('partials/_header') %>
+    <h5 class="text ml-5 mt-5 mb-3">User Registration</h5>
+    <form class="ml-5 mt-2 mb-2">
+      <div class="form-group">
+        <label for="inputEmail">Email address</label>
+        <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" style="width: 25%;">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" class="form-control" id="password" name="password" placeholder="Password"
+          style="width: 25%;">
+      </div>
+      <button type="submit" class="btn btn-primary mt-1">Submit</button>
+    </form>
+</body>
+
+</html>
