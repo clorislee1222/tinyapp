@@ -24,13 +24,13 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
-
 //------GET------
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  if (users[req.session.user_id]) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.get("/hello", (req, res) => {
@@ -59,19 +59,24 @@ app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const userID = req.session.user_id;
   if (users[userID]) {
-    const urls = urlsForUser(userID, urlDatabase);
-    const templateVars = {
-      user: users[userID],
-      longURL: urlDatabase[id]["longURL"],
-      id,
-      urls
-    };
-
-    if (urls[id]["userID"] === userID) {
-      res.render("urls_show", templateVars);
+    if (urlDatabase[id]) {
+      const urls = urlsForUser(userID, urlDatabase);
+      const templateVars = {
+        user: users[userID],
+        longURL: urlDatabase[id]["longURL"],
+        id,
+        urls
+      };
+      
+      if (urls[id]["userID"] === userID) {
+        res.render("urls_show", templateVars);
+      } else {
+        res.status(403).send(`Sorry, you do not have access to the URL with the ID: ${id}.`);
+        //The individual URL pages should not be accesible if the URL does not belong to them.
+      }
     } else {
-      res.status(403).send("Sorry, you do not have access to this URL.");
-      //The individual URL pages should not be accesible if the URL does not belong to them.
+      res.send(403).send("The given ID does not exist.")
+      //if a URL for the given ID does not exist, return error
     }
   } else {
     res.status(403).send("Please login.");
@@ -84,7 +89,7 @@ app.get("/u/:id", (req, res) => {
     const longURL = urlDatabase[req.params.id].longURL;
     res.redirect(longURL);
   } else {
-    res.send(403).send("The shortened url does not exist.");
+    res.send(403).send("The given ID does not exist.");
     return;
   }
 });
@@ -145,9 +150,13 @@ app.post("/urls/:id", (req, res) => {
   const id = req.params.id;
   const userID = req.session.user_id;
   if (users[userID]) {
-    if (urls[id]["userID"] === userID) {
-      urlDatabase[req.params.id].longURL = req.body.longURL;
-      res.redirect("/urls");
+    if (urlDatabase[id]["userID"] === userID) {
+      if (req.body.longURL) {
+        urlDatabase[req.params.id].longURL = req.body.longURL;
+        res.redirect("/urls");
+      } else {
+        res.status(403).send("Please enter the URL.");
+      }
     } else {
       res.status(403).send("Sorry, you do not have access to this URL.")
     }
@@ -158,12 +167,16 @@ app.post("/urls/:id", (req, res) => {
 
 app.post("/urls", (req, res) => {
   if (users[req.session.user_id]) {
-    const id = generateRandomString();
-    urlDatabase[id] = {
-      longURL: req.body.longURL,
-      userID: req.session.user_id
-    };
-    res.redirect(`/urls/${id}`);
+    if (req.body.longURL) {
+      const id = generateRandomString();
+      urlDatabase[id] = {
+        longURL: req.body.longURL,
+        userID: req.session.user_id
+      };
+      res.redirect(`/urls/${id}`);
+    } else {
+      res.status(403).send("Please enter the URL.");
+    }
   } else {
     res.status(403).send("Please login before shorten URLs.");
   }
@@ -216,4 +229,10 @@ app.post("/logout", (req, res) => {
   res.clearCookie("session");
   res.clearCookie("session.sig");
   res.redirect("/login");
+});
+
+//------Server starts------
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
 });

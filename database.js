@@ -1,3 +1,5 @@
+const bcrypt = require("bcryptjs");
+
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
